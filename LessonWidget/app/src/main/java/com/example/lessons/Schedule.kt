@@ -55,7 +55,11 @@ object Schedule {
 
     fun fmt(min: Int) = "%02d:%02d".format(min / 60, min % 60)
 
-    fun find(now: Calendar): Result? {
+    val shortDays = arrayOf("", "Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб")
+    val fullDays = arrayOf("", "Воскресенье", "Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота")
+
+    fun upcoming(now: Calendar, limit: Int): List<Result> {
+        val out = ArrayList<Result>()
         val nowMin = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
         for (offset in 0..7) {
             val d = (now.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, offset) }
@@ -64,9 +68,12 @@ object Schedule {
             for (l in lessons) {
                 val (s, e) = bells(dow)[l.n - 1]
                 if (offset == 0 && nowMin >= e) continue
-                return Result(l, s, e, offset, dow, offset == 0 && nowMin >= s)
+                out.add(Result(l, s, e, offset, dow, offset == 0 && nowMin >= s))
+                if (out.size >= limit) return out
             }
         }
-        return null
+        return out
     }
+
+    fun find(now: Calendar): Result? = upcoming(now, 1).firstOrNull()
 }

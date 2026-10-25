@@ -13,8 +13,7 @@
         android:layout_height="wrap_content"
         android:textColor="#9AA3B2"
         android:textSize="12sp"
-        android:textStyle="bold"
-        android:text="СЛЕДУЮЩИЙ УРОК"/>
+        android:textStyle="bold"/>
 
     <TextView
         android:id="@+id/time"
@@ -37,16 +36,15 @@
         android:maxLines="2"
         android:ellipsize="end"
         android:textColor="#FFFFFF"
-        android:textSize="24sp"
+        android:textSize="22sp"
         android:textStyle="bold"/>
 
     <TextView
-        android:id="@+id/room"
-        android:layout_width="wrap_content"
+        android:id="@+id/after"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/chip_bg"
-        android:paddingHorizontal="10dp"
-        android:paddingVertical="4dp"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"/>
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:textColor="#9AA3B2"
+        android:textSize="12sp"/>
 </LinearLayout>

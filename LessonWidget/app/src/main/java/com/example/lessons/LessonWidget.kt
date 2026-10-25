@@ -24,12 +24,17 @@ class LessonWidget : AppWidgetProvider() {
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
     )
 
+    private fun openIntent(c: Context) = PendingIntent.getActivity(
+        c, 1, Intent(c, MainActivity::class.java),
+        PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+    )
+
     private fun update(c: Context) {
         val mgr = AppWidgetManager.getInstance(c)
         val ids = mgr.getAppWidgetIds(ComponentName(c, LessonWidget::class.java))
         val now = Calendar.getInstance()
-        val r = Schedule.find(now)
-        val days = arrayOf("", "Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб")
+        val list = Schedule.upcoming(now, 3)
+        val r = list.firstOrNull()
 
         for (id in ids) {
             val v = RemoteViews(c.packageName, R.layout.widget)
@@ -37,20 +42,28 @@ class LessonWidget : AppWidgetProvider() {
                 v.setTextViewText(R.id.label, "УРОКОВ НЕТ")
                 v.setTextViewText(R.id.time, "—")
                 v.setTextViewText(R.id.subject, "Отдыхай")
-                v.setTextViewText(R.id.room, "")
+                v.setTextViewText(R.id.after, "")
             } else {
                 v.setTextViewText(R.id.label, if (r.current) "СЕЙЧАС УРОК" else "СЛЕДУЮЩИЙ УРОК")
                 val day = when (r.dayOffset) {
                     0 -> ""
                     1 -> "Завтра · "
-                    else -> days[r.dayOfWeek] + " · "
+                    else -> Schedule.shortDays[r.dayOfWeek] + " · "
                 }
                 v.setTextViewText(R.id.time,
                     "$day${r.lesson.n}-й урок · ${Schedule.fmt(r.start)}–${Schedule.fmt(r.end)}")
                 v.setTextViewText(R.id.subject, r.lesson.name)
-                v.setTextViewText(R.id.room, "📍 Кабинет ${r.lesson.room}")
+                val rest = list.drop(1).joinToString("\n") { x ->
+                    val d = when {
+                        x.dayOffset == r.dayOffset -> ""
+                        x.dayOffset == 1 -> "Завтра "
+                        else -> Schedule.shortDays[x.dayOfWeek] + " "
+                    }
+                    "Дальше: $d${Schedule.fmt(x.start)} · ${x.lesson.name}"
+                }
+                v.setTextViewText(R.id.after, rest)
             }
-            v.setOnClickPendingIntent(R.id.root, refreshIntent(c))
+            v.setOnClickPendingIntent(R.id.root, openIntent(c))
             mgr.updateAppWidget(id, v)
         }
         scheduleNext(c, now, r)
